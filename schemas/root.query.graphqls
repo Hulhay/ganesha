@@ -1,0 +1,8 @@
+type Query {
+  health : GeneralResponse!
+}
+
+type GeneralResponse {
+  message: String!
+  isSuccess: Boolean!
+}
