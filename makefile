@@ -5,7 +5,7 @@ generate:
 	go run github.com/99designs/gqlgen generate
 
 test:
-	go test ./... -coverprofile=cover.out
+	go test ./services/... -coverprofile=cover.out
 
 cover: test
 	go tool cover -html=cover.out -o cover.html; \
@@ -16,3 +16,6 @@ migrate-up:
 
 migrate-down:
 	migrate -path migrations -database "postgresql://[YOUR_DB_USERNAME]:[YOUR_DB_PASSWORD]@[YOUR_DB_HOST]:[YOUR_DB_PORT]/[YOUR_DB_NAME]" -verbose down
+
+create-tag:
+	./script/create-tag.sh -v $(version)

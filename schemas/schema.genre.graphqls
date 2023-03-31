@@ -1,0 +1,8 @@
+type Genre {
+    genreUuid: String!
+    genreName: String!
+}
+
+extend type Query {
+    getGenres: [Genre]
+}

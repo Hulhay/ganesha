@@ -8,12 +8,12 @@ import (
 	"context"
 
 	"github.com/hulhay/ganesha/graph/generated"
-	"github.com/hulhay/ganesha/graph/model"
+	"github.com/hulhay/ganesha/graph/gqlmodel"
 )
 
 // Health is the resolver for the health field.
-func (r *queryResolver) Health(ctx context.Context) (*model.GeneralResponse, error) {
-	return &model.GeneralResponse{
+func (r *queryResolver) Health(ctx context.Context) (*gqlmodel.GeneralResponse, error) {
+	return &gqlmodel.GeneralResponse{
 		Message:   "Ganesha is running",
 		IsSuccess: true,
 	}, nil

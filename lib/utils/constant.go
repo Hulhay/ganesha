@@ -14,3 +14,7 @@ var (
 	ErrInvalidDateFormat      = errors.New("invalid date format")
 	ErrEndDateBeforeStartDate = errors.New("end date must be after start date")
 )
+
+var (
+	ErrFetchData = errors.New("an error occured when query db")
+)

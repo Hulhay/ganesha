@@ -34,3 +34,7 @@ func (c *Config) ConnectSqlxDB() {
 func (c *Config) DisconnectDB() {
 	c.dbSqlx.Close()
 }
+
+func (c *Config) DB() database.SqlxDatabase {
+	return c.dbSqlx
+}

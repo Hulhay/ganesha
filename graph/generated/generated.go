@@ -13,7 +13,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/hulhay/ganesha/graph/model"
+	"github.com/hulhay/ganesha/graph/gqlmodel"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -49,12 +49,18 @@ type ComplexityRoot struct {
 		Message   func(childComplexity int) int
 	}
 
+	Genre struct {
+		GenreName func(childComplexity int) int
+		GenreUUID func(childComplexity int) int
+	}
+
 	Mutation struct {
 		Hello func(childComplexity int) int
 	}
 
 	Query struct {
-		Health func(childComplexity int) int
+		GetGenres func(childComplexity int) int
+		Health    func(childComplexity int) int
 	}
 }
 
@@ -62,7 +68,8 @@ type MutationResolver interface {
 	Hello(ctx context.Context) (*string, error)
 }
 type QueryResolver interface {
-	Health(ctx context.Context) (*model.GeneralResponse, error)
+	Health(ctx context.Context) (*gqlmodel.GeneralResponse, error)
+	GetGenres(ctx context.Context) ([]*gqlmodel.Genre, error)
 }
 
 type executableSchema struct {
@@ -94,12 +101,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GeneralResponse.Message(childComplexity), true
 
+	case "Genre.genreName":
+		if e.complexity.Genre.GenreName == nil {
+			break
+		}
+
+		return e.complexity.Genre.GenreName(childComplexity), true
+
+	case "Genre.genreUuid":
+		if e.complexity.Genre.GenreUUID == nil {
+			break
+		}
+
+		return e.complexity.Genre.GenreUUID(childComplexity), true
+
 	case "Mutation.hello":
 		if e.complexity.Mutation.Hello == nil {
 			break
 		}
 
 		return e.complexity.Mutation.Hello(childComplexity), true
+
+	case "Query.getGenres":
+		if e.complexity.Query.GetGenres == nil {
+			break
+		}
+
+		return e.complexity.Query.GetGenres(childComplexity), true
 
 	case "Query.health":
 		if e.complexity.Query.Health == nil {
@@ -187,6 +215,14 @@ type GeneralResponse {
   message: String!
   isSuccess: Boolean!
 }`, BuiltIn: false},
+	{Name: "../../schemas/schema.genre.graphqls", Input: `type Genre {
+    genreUuid: String!
+    genreName: String!
+}
+
+extend type Query {
+    getGenres: [Genre]
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -247,7 +283,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _GeneralResponse_message(ctx context.Context, field graphql.CollectedField, obj *model.GeneralResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _GeneralResponse_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.GeneralResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GeneralResponse_message(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -291,7 +327,7 @@ func (ec *executionContext) fieldContext_GeneralResponse_message(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _GeneralResponse_isSuccess(ctx context.Context, field graphql.CollectedField, obj *model.GeneralResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _GeneralResponse_isSuccess(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.GeneralResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_GeneralResponse_isSuccess(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -330,6 +366,94 @@ func (ec *executionContext) fieldContext_GeneralResponse_isSuccess(ctx context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Genre_genreUuid(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Genre) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Genre_genreUuid(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GenreUUID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Genre_genreUuid(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Genre",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Genre_genreName(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Genre) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Genre_genreName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GenreName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Genre_genreName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Genre",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -402,9 +526,9 @@ func (ec *executionContext) _Query_health(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.GeneralResponse)
+	res := resTmp.(*gqlmodel.GeneralResponse)
 	fc.Result = res
-	return ec.marshalNGeneralResponse2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋmodelᚐGeneralResponse(ctx, field.Selections, res)
+	return ec.marshalNGeneralResponse2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGeneralResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_health(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -421,6 +545,53 @@ func (ec *executionContext) fieldContext_Query_health(ctx context.Context, field
 				return ec.fieldContext_GeneralResponse_isSuccess(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GeneralResponse", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getGenres(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getGenres(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetGenres(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*gqlmodel.Genre)
+	fc.Result = res
+	return ec.marshalOGenre2ᚕᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGenre(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getGenres(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "genreUuid":
+				return ec.fieldContext_Genre_genreUuid(ctx, field)
+			case "genreName":
+				return ec.fieldContext_Genre_genreName(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Genre", field.Name)
 		},
 	}
 	return fc, nil
@@ -2338,7 +2509,7 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 var generalResponseImplementors = []string{"GeneralResponse"}
 
-func (ec *executionContext) _GeneralResponse(ctx context.Context, sel ast.SelectionSet, obj *model.GeneralResponse) graphql.Marshaler {
+func (ec *executionContext) _GeneralResponse(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.GeneralResponse) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, generalResponseImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
@@ -2356,6 +2527,41 @@ func (ec *executionContext) _GeneralResponse(ctx context.Context, sel ast.Select
 		case "isSuccess":
 
 			out.Values[i] = ec._GeneralResponse_isSuccess(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var genreImplementors = []string{"Genre"}
+
+func (ec *executionContext) _Genre(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Genre) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, genreImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Genre")
+		case "genreUuid":
+
+			out.Values[i] = ec._Genre_genreUuid(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "genreName":
+
+			out.Values[i] = ec._Genre_genreName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -2439,6 +2645,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getGenres":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getGenres(ctx, field)
 				return res
 			}
 
@@ -2805,11 +3031,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNGeneralResponse2githubᚗcomᚋhulhayᚋganeshaᚋgraphᚋmodelᚐGeneralResponse(ctx context.Context, sel ast.SelectionSet, v model.GeneralResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNGeneralResponse2githubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGeneralResponse(ctx context.Context, sel ast.SelectionSet, v gqlmodel.GeneralResponse) graphql.Marshaler {
 	return ec._GeneralResponse(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGeneralResponse2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋmodelᚐGeneralResponse(ctx context.Context, sel ast.SelectionSet, v *model.GeneralResponse) graphql.Marshaler {
+func (ec *executionContext) marshalNGeneralResponse2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGeneralResponse(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.GeneralResponse) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3111,6 +3337,54 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOGenre2ᚕᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGenre(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Genre) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOGenre2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGenre(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOGenre2ᚖgithubᚗcomᚋhulhayᚋganeshaᚋgraphᚋgqlmodelᚐGenre(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Genre) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Genre(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
